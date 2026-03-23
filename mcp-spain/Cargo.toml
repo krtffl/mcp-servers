@@ -5,6 +5,10 @@ edition.workspace = true
 license.workspace = true
 description = "MCP server providing access to Spanish government data (BOE, AEAT, CNAE, Catastro, Verifactu)"
 
+[lib]
+name = "mcp_spain"
+path = "src/lib.rs"
+
 [[bin]]
 name = "mcp-spain"
 path = "src/main.rs"
@@ -24,6 +28,10 @@ tracing-subscriber = { workspace = true }
 toml = { workspace = true }
 dirs = "6"
 quick-xml = { version = "0.37", features = ["serialize"] }
+
+[dev-dependencies]
+wiremock = { workspace = true }
+tokio = { workspace = true }
 
 [lints]
 workspace = true

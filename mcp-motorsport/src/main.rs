@@ -3,15 +3,14 @@
 //! Tools: `get_race_results`, `get_session_results`, `get_lap_times`,
 //! `get_tire_stints`, `get_telemetry`, `compare_drivers`, `get_standings`.
 
-mod config;
-mod tools;
-
 use std::sync::Arc;
 use std::time::Duration;
 
 use anyhow::Result;
 use clap::Parser;
 use mcp_common::{ResponseCache, build_http_client};
+use mcp_motorsport::config;
+use mcp_motorsport::tools;
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::{ServerHandler, ServiceExt as _, tool, tool_handler, tool_router};

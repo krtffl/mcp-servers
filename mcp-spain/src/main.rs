@@ -2,22 +2,19 @@
 //!
 //! Tools: `lookup_cnae`, `search_boe`, `get_aeat_calendar`, `query_catastro`, `check_verifactu`.
 
-mod config;
-mod tools;
-
 use std::sync::Arc;
 use std::time::Duration;
 
 use anyhow::Result;
 use clap::Parser;
 use mcp_common::{ResponseCache, build_http_client};
+use mcp_spain::config::SpainConfig;
+use mcp_spain::tools;
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::{ServerHandler, ServiceExt as _, tool, tool_handler, tool_router};
 use schemars::JsonSchema;
 use serde::Deserialize;
-
-use config::SpainConfig;
 
 #[derive(Parser, Debug)]
 #[command(name = "mcp-spain", version, about = "MCP server for Spanish government data")]

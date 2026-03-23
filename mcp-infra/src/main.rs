@@ -3,22 +3,19 @@
 //! Tools: get_server_health, list_docker_containers, query_prometheus,
 //! get_grafana_dashboard_url, list_recent_alerts.
 
-mod config;
-mod tools;
-
 use std::sync::Arc;
 use std::time::Duration;
 
 use anyhow::Result;
 use clap::Parser;
 use mcp_common::{ResponseCache, build_http_client};
+use mcp_infra::config::InfraConfig;
+use mcp_infra::tools;
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::{ServerHandler, ServiceExt as _, tool, tool_handler, tool_router};
 use schemars::JsonSchema;
 use serde::Deserialize;
-
-use config::InfraConfig;
 
 #[derive(Parser, Debug)]
 #[command(name = "mcp-infra", version, about = "MCP server for infrastructure metrics")]

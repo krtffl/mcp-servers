@@ -5,6 +5,10 @@ edition.workspace = true
 license.workspace = true
 description = "MCP server providing F1 motorsport data via OpenF1 and Jolpica-F1 APIs"
 
+[lib]
+name = "mcp_motorsport"
+path = "src/lib.rs"
+
 [[bin]]
 name = "mcp-motorsport"
 path = "src/main.rs"
@@ -24,6 +28,11 @@ tracing-subscriber = { workspace = true }
 chrono = { workspace = true }
 toml = { workspace = true }
 dirs = "6"
+
+[dev-dependencies]
+wiremock = { workspace = true }
+tokio = { workspace = true }
+serde_json = { workspace = true }
 
 [lints]
 workspace = true

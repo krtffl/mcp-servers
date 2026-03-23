@@ -26,5 +26,9 @@ bollard = { version = "0.18", default-features = false, features = ["rustls"] }
 sysinfo = "0.33"
 dirs = "6"
 
+[dev-dependencies]
+wiremock = { workspace = true }
+tokio = { workspace = true }
+
 [lints]
 workspace = true
