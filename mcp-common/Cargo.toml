@@ -1,0 +1,19 @@
+[package]
+name = "mcp-common"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Shared utilities for MCP server crates: caching, rate limiting, config, HTTP client"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+reqwest = { workspace = true }
+thiserror = { workspace = true }
+toml = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+moka = { workspace = true }
+
+[lints]
+workspace = true

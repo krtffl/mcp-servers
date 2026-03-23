@@ -1,0 +1,29 @@
+[package]
+name = "mcp-motorsport"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "MCP server providing F1 motorsport data via OpenF1 and Jolpica-F1 APIs"
+
+[[bin]]
+name = "mcp-motorsport"
+path = "src/main.rs"
+
+[dependencies]
+mcp-common = { path = "../mcp-common" }
+rmcp = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+schemars = { workspace = true }
+reqwest = { workspace = true }
+clap = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+chrono = { workspace = true }
+toml = { workspace = true }
+dirs = "6"
+
+[lints]
+workspace = true
