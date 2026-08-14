@@ -1,4 +1,4 @@
-//! get_grafana_dashboard_url tool — resolves dashboard names to URLs.
+//! `get_grafana_dashboard_url` tool — resolves dashboard names to URLs.
 
 use mcp_common::ResponseCache;
 use serde::Serialize;
@@ -12,6 +12,12 @@ pub struct GrafanaDashboardUrl {
     pub uid: String,
 }
 
+/// Resolve a Grafana dashboard name or UID to its URL.
+///
+/// # Errors
+///
+/// Returns an error if the Grafana request fails or returns a non-success
+/// status, or if the response cannot be parsed or serialized to JSON.
 pub async fn execute(
     name: Option<&str>,
     uid: Option<&str>,
@@ -35,12 +41,13 @@ pub async fn execute(
                 req = req.bearer_auth(token);
             }
 
-            let resp = req.send().await.map_err(|e| {
-                mcp_common::McpServerError::ExternalApi {
+            let resp = req
+                .send()
+                .await
+                .map_err(|e| mcp_common::McpServerError::ExternalApi {
                     url: url.clone(),
                     reason: e.to_string(),
-                }
-            })?;
+                })?;
 
             if !resp.status().is_success() {
                 let status = resp.status();
@@ -51,12 +58,13 @@ pub async fn execute(
                 });
             }
 
-            let dashboards: Vec<serde_json::Value> = resp.json().await.map_err(|e| {
-                mcp_common::McpServerError::ExternalApi {
-                    url: url.clone(),
-                    reason: format!("JSON parse error: {e}"),
-                }
-            })?;
+            let dashboards: Vec<serde_json::Value> =
+                resp.json()
+                    .await
+                    .map_err(|e| mcp_common::McpServerError::ExternalApi {
+                        url: url.clone(),
+                        reason: format!("JSON parse error: {e}"),
+                    })?;
 
             // Filter by uid if provided
             let results: Vec<GrafanaDashboardUrl> = dashboards
@@ -73,7 +81,12 @@ pub async fn execute(
                 .filter_map(|d| {
                     let d_uid = d.get("uid")?.as_str()?.to_string();
                     let title = d.get("title")?.as_str()?.to_string();
-                    let dash_url = format!("{}/d/{}/{}", config.url, d_uid, title.to_lowercase().replace(' ', "-"));
+                    let dash_url = format!(
+                        "{}/d/{}/{}",
+                        config.url,
+                        d_uid,
+                        title.to_lowercase().replace(' ', "-")
+                    );
                     Some(GrafanaDashboardUrl {
                         url: dash_url,
                         dashboard_title: title,
@@ -82,16 +95,13 @@ pub async fn execute(
                 })
                 .collect();
 
-            serde_json::to_value(&results).map_err(|e| {
-                mcp_common::McpServerError::ExternalApi {
-                    url,
-                    reason: format!("serialization error: {e}"),
-                }
+            serde_json::to_value(&results).map_err(|e| mcp_common::McpServerError::ExternalApi {
+                url,
+                reason: format!("serialization error: {e}"),
             })
         })
         .await
         .map_err(|e| e.to_string())?;
 
-    serde_json::to_string_pretty(&value)
-        .map_err(|e| format!("JSON error: {e}"))
+    serde_json::to_string_pretty(&value).map_err(|e| format!("JSON error: {e}"))
 }

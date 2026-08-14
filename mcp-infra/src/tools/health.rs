@@ -1,4 +1,4 @@
-//! get_server_health tool — host metrics via sysinfo.
+//! `get_server_health` tool — host metrics via sysinfo.
 
 use serde::Serialize;
 use sysinfo::{Disks, Networks, System};
@@ -24,11 +24,19 @@ pub struct DiskInfo {
     pub usage_percent: f64,
 }
 
+/// Collect host health metrics (CPU, memory, disks, network, uptime).
+///
+/// # Errors
+///
+/// Returns an error if the collected metrics fail to serialize to JSON.
+// Byte counters are converted to f64 for human-readable MB/GB reporting. Values
+// only lose precision above 2^53 bytes (~9 PB), far beyond any real host.
+#[allow(clippy::cast_precision_loss)]
 pub fn execute() -> Result<String, String> {
     let mut sys = System::new_all();
     sys.refresh_all();
 
-    let cpu_usage = sys.global_cpu_usage() as f64;
+    let cpu_usage = f64::from(sys.global_cpu_usage());
     let mem_used = sys.used_memory() as f64 / 1_048_576.0;
     let mem_total = sys.total_memory() as f64 / 1_048_576.0;
     let mem_pct = if mem_total > 0.0 {
@@ -76,6 +84,5 @@ pub fn execute() -> Result<String, String> {
         hostname: System::host_name().unwrap_or_else(|| "unknown".to_string()),
     };
 
-    serde_json::to_string_pretty(&health)
-        .map_err(|e| format!("JSON error: {e}"))
+    serde_json::to_string_pretty(&health).map_err(|e| format!("JSON error: {e}"))
 }

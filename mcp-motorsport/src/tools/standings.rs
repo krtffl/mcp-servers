@@ -12,6 +12,12 @@ use mcp_common::ResponseCache;
 use crate::config::JolpicaConfig;
 
 /// Fetch driver or constructor championship standings for a season.
+///
+/// # Errors
+///
+/// Returns an error if the standings kind is unrecognized, if the Jolpica
+/// request fails or returns a non-success status, or if the response cannot be
+/// parsed or serialized to JSON.
 pub async fn execute(
     year: u16,
     standings_type: &str,
@@ -22,9 +28,11 @@ pub async fn execute(
     let st = match standings_type.to_lowercase().as_str() {
         "drivers" | "driver" => "driverStandings",
         "constructors" | "constructor" | "teams" | "team" => "constructorStandings",
-        other => return Err(format!(
-            "Invalid standings_type '{other}'. Use 'drivers' or 'constructors'."
-        )),
+        other => {
+            return Err(format!(
+                "Invalid standings_type '{other}'. Use 'drivers' or 'constructors'."
+            ));
+        }
     };
 
     let cache_key = format!("standings:{year}:{st}");
@@ -49,12 +57,13 @@ pub async fn execute(
                 });
             }
 
-            let body: serde_json::Value = resp.json().await.map_err(|e| {
-                mcp_common::McpServerError::ExternalApi {
-                    url: url.clone(),
-                    reason: format!("JSON parse error: {e}"),
-                }
-            })?;
+            let body: serde_json::Value =
+                resp.json()
+                    .await
+                    .map_err(|e| mcp_common::McpServerError::ExternalApi {
+                        url: url.clone(),
+                        reason: format!("JSON parse error: {e}"),
+                    })?;
 
             let standings = if st == "driverStandings" {
                 parse_driver_standings(&body)

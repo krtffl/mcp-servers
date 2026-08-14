@@ -20,7 +20,11 @@ use serde::Deserialize;
 use config::MotorsportConfig;
 
 #[derive(Parser, Debug)]
-#[command(name = "mcp-motorsport", version, about = "MCP server for F1 motorsport data")]
+#[command(
+    name = "mcp-motorsport",
+    version,
+    about = "MCP server for F1 motorsport data"
+)]
 struct Cli {
     /// Path to TOML config file.
     #[arg(short, long)]
@@ -175,10 +179,7 @@ impl MotorsportServer {
         name = "get_lap_times",
         description = "Get detailed lap-by-lap timing data for a specific driver in an F1 session, including sector times"
     )]
-    async fn get_lap_times(
-        &self,
-        input: Parameters<GetLapTimesInput>,
-    ) -> Result<String, String> {
+    async fn get_lap_times(&self, input: Parameters<GetLapTimesInput>) -> Result<String, String> {
         tools::lap_times::execute(
             input.0.year,
             &input.0.grand_prix,
@@ -214,10 +215,7 @@ impl MotorsportServer {
         name = "get_telemetry",
         description = "Get car telemetry data (speed, throttle, brake, gear, DRS) for a driver in an F1 session, optionally filtered to a specific lap"
     )]
-    async fn get_telemetry(
-        &self,
-        input: Parameters<GetTelemetryInput>,
-    ) -> Result<String, String> {
+    async fn get_telemetry(&self, input: Parameters<GetTelemetryInput>) -> Result<String, String> {
         tools::telemetry::execute(
             input.0.year,
             &input.0.grand_prix,
@@ -256,15 +254,10 @@ impl MotorsportServer {
         name = "get_standings",
         description = "Get current F1 championship standings (driver or constructor) for a season, including points and wins"
     )]
-    async fn get_standings(
-        &self,
-        input: Parameters<GetStandingsInput>,
-    ) -> Result<String, String> {
-        let jolpica = self
-            .config
-            .jolpica
-            .as_ref()
-            .ok_or("Jolpica-F1 API is not configured. Add a [jolpica] section to your config file.")?;
+    async fn get_standings(&self, input: Parameters<GetStandingsInput>) -> Result<String, String> {
+        let jolpica = self.config.jolpica.as_ref().ok_or(
+            "Jolpica-F1 API is not configured. Add a [jolpica] section to your config file.",
+        )?;
         tools::standings::execute(
             input.0.year,
             &input.0.standings_type,

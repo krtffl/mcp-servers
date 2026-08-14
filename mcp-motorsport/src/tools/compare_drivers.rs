@@ -7,10 +7,15 @@ use std::collections::HashMap;
 
 use mcp_common::ResponseCache;
 
-use crate::config::OpenF1Config;
 use super::common::{openf1_get, resolve_driver_number, resolve_session_key};
+use crate::config::OpenF1Config;
 
 /// Compare two drivers' lap times in a session.
+///
+/// # Errors
+///
+/// Returns an error if the session or either driver cannot be resolved, if the
+/// `OpenF1` request fails, or if the response fails to serialize to JSON.
 #[allow(clippy::too_many_arguments)]
 pub async fn execute(
     year: u16,
@@ -22,12 +27,9 @@ pub async fn execute(
     cache: &ResponseCache,
     config: &OpenF1Config,
 ) -> Result<String, String> {
-    let session_key =
-        resolve_session_key(year, grand_prix, session, http, cache, config).await?;
-    let num_a =
-        resolve_driver_number(session_key, driver_a, http, cache, config).await?;
-    let num_b =
-        resolve_driver_number(session_key, driver_b, http, cache, config).await?;
+    let session_key = resolve_session_key(year, grand_prix, session, http, cache, config).await?;
+    let num_a = resolve_driver_number(session_key, driver_a, http, cache, config).await?;
+    let num_b = resolve_driver_number(session_key, driver_b, http, cache, config).await?;
 
     let cache_key = format!("compare:{session_key}:{num_a}:{num_b}");
 

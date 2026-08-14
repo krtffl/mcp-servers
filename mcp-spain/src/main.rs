@@ -17,7 +17,11 @@ use schemars::JsonSchema;
 use serde::Deserialize;
 
 #[derive(Parser, Debug)]
-#[command(name = "mcp-spain", version, about = "MCP server for Spanish government data")]
+#[command(
+    name = "mcp-spain",
+    version,
+    about = "MCP server for Spanish government data"
+)]
 struct Cli {
     /// Path to TOML config file.
     #[arg(short, long)]
@@ -113,10 +117,7 @@ impl SpainServer {
         name = "lookup_cnae",
         description = "Look up CNAE 2009 business classification codes by code prefix or description keyword"
     )]
-    async fn lookup_cnae(
-        &self,
-        input: Parameters<LookupCnaeInput>,
-    ) -> Result<String, String> {
+    async fn lookup_cnae(&self, input: Parameters<LookupCnaeInput>) -> Result<String, String> {
         tools::cnae::execute(input.0.code.as_deref(), input.0.description.as_deref())
     }
 
@@ -124,10 +125,7 @@ impl SpainServer {
         name = "search_boe",
         description = "Search the BOE (Boletín Oficial del Estado) for Spanish laws, regulations, and official publications"
     )]
-    async fn search_boe(
-        &self,
-        input: Parameters<SearchBoeInput>,
-    ) -> Result<String, String> {
+    async fn search_boe(&self, input: Parameters<SearchBoeInput>) -> Result<String, String> {
         tools::boe::execute(
             &input.0.keywords,
             input.0.date_from.as_deref(),

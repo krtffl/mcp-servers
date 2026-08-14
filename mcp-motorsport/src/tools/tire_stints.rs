@@ -7,10 +7,15 @@ use std::collections::HashMap;
 
 use mcp_common::ResponseCache;
 
-use crate::config::OpenF1Config;
 use super::common::{openf1_get, resolve_driver_number, resolve_session_key};
+use crate::config::OpenF1Config;
 
 /// Fetch tire stint data for a Grand Prix race, optionally filtered by driver.
+///
+/// # Errors
+///
+/// Returns an error if the session or driver cannot be resolved, if the
+/// `OpenF1` request fails, or if the response fails to serialize to JSON.
 pub async fn execute(
     year: u16,
     grand_prix: &str,
@@ -19,8 +24,7 @@ pub async fn execute(
     cache: &ResponseCache,
     config: &OpenF1Config,
 ) -> Result<String, String> {
-    let session_key =
-        resolve_session_key(year, grand_prix, "Race", http, cache, config).await?;
+    let session_key = resolve_session_key(year, grand_prix, "Race", http, cache, config).await?;
 
     let driver_number = if let Some(d) = driver {
         Some(resolve_driver_number(session_key, d, http, cache, config).await?)
@@ -41,19 +45,13 @@ pub async fn execute(
                     config.base_url,
                 )
             } else {
-                format!(
-                    "{}/stints?session_key={session_key}",
-                    config.base_url,
-                )
+                format!("{}/stints?session_key={session_key}", config.base_url,)
             };
 
             let stints_json = openf1_get(http, &url, config).await?;
 
             // Fetch driver names for display.
-            let drivers_url = format!(
-                "{}/drivers?session_key={session_key}",
-                config.base_url,
-            );
+            let drivers_url = format!("{}/drivers?session_key={session_key}", config.base_url,);
             let drivers_json = openf1_get(http, &drivers_url, config).await?;
 
             let driver_names: HashMap<u64, String> = drivers_json
@@ -80,10 +78,11 @@ pub async fn execute(
                         .unwrap_or("UNKNOWN");
                     let lap_start = stint.get("lap_start").and_then(serde_json::Value::as_u64)?;
                     let lap_end = stint.get("lap_end").and_then(serde_json::Value::as_u64)?;
-                    let tyre_age = stint.get("tyre_age_at_start").and_then(serde_json::Value::as_u64).unwrap_or(0);
-                    let driver_name = driver_names
-                        .get(&num)
-                        .map_or("Unknown", String::as_str);
+                    let tyre_age = stint
+                        .get("tyre_age_at_start")
+                        .and_then(serde_json::Value::as_u64)
+                        .unwrap_or(0);
+                    let driver_name = driver_names.get(&num).map_or("Unknown", String::as_str);
 
                     Some(serde_json::json!({
                         "driver_number": num,

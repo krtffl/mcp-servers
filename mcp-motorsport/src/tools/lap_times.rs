@@ -5,10 +5,15 @@
 
 use mcp_common::ResponseCache;
 
-use crate::config::OpenF1Config;
 use super::common::{openf1_get, resolve_driver_number, resolve_session_key};
+use crate::config::OpenF1Config;
 
 /// Fetch lap times for a specific driver in a session.
+///
+/// # Errors
+///
+/// Returns an error if the session or driver cannot be resolved, if the
+/// `OpenF1` request fails, or if the response fails to serialize to JSON.
 pub async fn execute(
     year: u16,
     grand_prix: &str,
@@ -18,10 +23,8 @@ pub async fn execute(
     cache: &ResponseCache,
     config: &OpenF1Config,
 ) -> Result<String, String> {
-    let session_key =
-        resolve_session_key(year, grand_prix, session, http, cache, config).await?;
-    let driver_number =
-        resolve_driver_number(session_key, driver, http, cache, config).await?;
+    let session_key = resolve_session_key(year, grand_prix, session, http, cache, config).await?;
+    let driver_number = resolve_driver_number(session_key, driver, http, cache, config).await?;
 
     let cache_key = format!("lap_times:{session_key}:{driver_number}");
 
@@ -41,10 +44,19 @@ pub async fn execute(
                 .filter_map(|lap| {
                     let lap_number = lap.get("lap_number")?.as_u64()?;
                     let duration = lap.get("lap_duration").and_then(serde_json::Value::as_f64);
-                    let s1 = lap.get("duration_sector_1").and_then(serde_json::Value::as_f64);
-                    let s2 = lap.get("duration_sector_2").and_then(serde_json::Value::as_f64);
-                    let s3 = lap.get("duration_sector_3").and_then(serde_json::Value::as_f64);
-                    let is_pit_out = lap.get("is_pit_out_lap").and_then(serde_json::Value::as_bool).unwrap_or(false);
+                    let s1 = lap
+                        .get("duration_sector_1")
+                        .and_then(serde_json::Value::as_f64);
+                    let s2 = lap
+                        .get("duration_sector_2")
+                        .and_then(serde_json::Value::as_f64);
+                    let s3 = lap
+                        .get("duration_sector_3")
+                        .and_then(serde_json::Value::as_f64);
+                    let is_pit_out = lap
+                        .get("is_pit_out_lap")
+                        .and_then(serde_json::Value::as_bool)
+                        .unwrap_or(false);
 
                     Some(serde_json::json!({
                         "lap_number": lap_number,

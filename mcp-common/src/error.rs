@@ -11,10 +11,7 @@ pub enum McpServerError {
     UnexpectedResponse { url: String, reason: String },
 
     #[error("rate limit exceeded for {api}, retry after {retry_after_secs}s")]
-    RateLimited {
-        api: String,
-        retry_after_secs: u64,
-    },
+    RateLimited { api: String, retry_after_secs: u64 },
 
     #[error("invalid tool input: {0}")]
     InvalidInput(String),

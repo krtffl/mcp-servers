@@ -12,6 +12,7 @@ pub struct ResponseCache {
 
 impl ResponseCache {
     /// Create a new cache with the given maximum capacity and default TTL.
+    #[must_use]
     pub fn new(max_capacity: u64, ttl: Duration) -> Self {
         Self {
             inner: Cache::builder()
@@ -23,6 +24,10 @@ impl ResponseCache {
 
     /// Get a cached value by key, or fetch and cache it using the provided
     /// async closure on cache miss.
+    ///
+    /// # Errors
+    ///
+    /// Returns any error produced by `fetch` on a cache miss.
     pub async fn get_or_fetch<F, Fut>(
         &self,
         key: &str,
@@ -62,9 +67,7 @@ mod tests {
     async fn cache_hit_returns_stored_value() {
         let cache = ResponseCache::new(100, Duration::from_secs(60));
         let value = serde_json::json!({"status": "ok"});
-        cache
-            .insert("test_key".to_owned(), value.clone())
-            .await;
+        cache.insert("test_key".to_owned(), value.clone()).await;
 
         let result = cache
             .get_or_fetch("test_key", || async {

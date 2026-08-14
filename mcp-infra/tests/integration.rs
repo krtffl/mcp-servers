@@ -94,8 +94,7 @@ async fn test_grafana_dashboard_search() {
     let client = reqwest::Client::new();
     let cache = ResponseCache::new(100, Duration::from_secs(60));
 
-    let result =
-        tools::grafana::execute(Some("System"), None, &client, &cache, &config).await;
+    let result = tools::grafana::execute(Some("System"), None, &client, &cache, &config).await;
 
     assert!(result.is_ok(), "grafana::execute() failed: {result:?}");
 

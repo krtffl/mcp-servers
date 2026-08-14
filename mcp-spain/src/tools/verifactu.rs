@@ -18,6 +18,10 @@ pub struct VerifactuResult {
 }
 
 /// Check Verifactu compliance requirements for a given business type.
+///
+/// # Errors
+///
+/// Returns an error if the response fails to serialize to JSON.
 pub fn execute(business_type: &str, sii_enrolled: Option<bool>) -> Result<String, String> {
     let bt = business_type.to_lowercase();
     let sii = sii_enrolled.unwrap_or(false);
@@ -35,8 +39,7 @@ pub fn execute(business_type: &str, sii_enrolled: Option<bool>) -> Result<String
                 "https://sede.agenciatributaria.gob.es/Sede/iva/suministro-inmediato-informacion.html",
             ],
         };
-        return serde_json::to_string_pretty(&result)
-            .map_err(|e| format!("JSON error: {e}"));
+        return serde_json::to_string_pretty(&result).map_err(|e| format!("JSON error: {e}"));
     }
 
     // Determine deadline based on business type.

@@ -1,7 +1,7 @@
-//! list_docker_containers tool — Docker container listing via bollard.
+//! `list_docker_containers` tool — Docker container listing via bollard.
 
-use bollard::container::ListContainersOptions;
 use bollard::Docker;
+use bollard::container::ListContainersOptions;
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
@@ -13,10 +13,13 @@ pub struct ContainerInfo {
     pub ports: Vec<String>,
 }
 
-pub async fn execute(
-    name_filter: Option<&str>,
-    show_all: bool,
-) -> Result<String, String> {
+/// List Docker containers, optionally filtered by name.
+///
+/// # Errors
+///
+/// Returns an error if the Docker daemon is unreachable, if the Docker API
+/// call fails, or if the response fails to serialize to JSON.
+pub async fn execute(name_filter: Option<&str>, show_all: bool) -> Result<String, String> {
     let docker = Docker::connect_with_defaults()
         .map_err(|e| format!("Docker connection failed: {e}. Ensure Docker is running."))?;
 
@@ -39,12 +42,10 @@ pub async fn execute(
     let infos: Vec<ContainerInfo> = containers
         .iter()
         .map(|c| {
-            let name = c
-                .names
-                .as_ref()
-                .and_then(|n| n.first())
-                .map(|n| n.trim_start_matches('/').to_string())
-                .unwrap_or_else(|| "unknown".to_string());
+            let name = c.names.as_ref().and_then(|n| n.first()).map_or_else(
+                || "unknown".to_string(),
+                |n| n.trim_start_matches('/').to_string(),
+            );
 
             let ports = c
                 .ports
@@ -53,7 +54,8 @@ pub async fn execute(
                     ps.iter()
                         .filter_map(|p| {
                             let private = p.private_port;
-                            p.public_port.map(|pub_port| format!("{pub_port}->{private}"))
+                            p.public_port
+                                .map(|pub_port| format!("{pub_port}->{private}"))
                         })
                         .collect()
                 })
@@ -69,6 +71,5 @@ pub async fn execute(
         })
         .collect();
 
-    serde_json::to_string_pretty(&infos)
-        .map_err(|e| format!("JSON error: {e}"))
+    serde_json::to_string_pretty(&infos).map_err(|e| format!("JSON error: {e}"))
 }

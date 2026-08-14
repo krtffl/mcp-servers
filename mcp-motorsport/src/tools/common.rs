@@ -11,6 +11,11 @@ use crate::config::OpenF1Config;
 ///
 /// Queries `GET /sessions?year={year}&country_name={gp}&session_name={session}`
 /// and returns the first matching `session_key`.
+///
+/// # Errors
+///
+/// Returns an error if the `OpenF1` request fails, if no session matches the
+/// given parameters, or if `session_key` is not a valid `u64`.
 pub async fn resolve_session_key(
     year: u16,
     grand_prix: &str,
@@ -63,6 +68,11 @@ pub async fn resolve_session_key(
 /// Queries `GET /drivers?session_key={key}` and matches against
 /// `name_acronym`, `full_name`, `first_name`, `last_name`, or the
 /// number itself if the input parses as an integer.
+///
+/// # Errors
+///
+/// Returns an error if the `OpenF1` request fails, if the drivers response is
+/// not an array, if no driver matches, or if the number is out of `u16` range.
 pub async fn resolve_driver_number(
     session_key: u64,
     driver: &str,
@@ -79,10 +89,7 @@ pub async fn resolve_driver_number(
 
     let value = cache
         .get_or_fetch(&cache_key, || async {
-            let url = format!(
-                "{}/drivers?session_key={session_key}",
-                config.base_url,
-            );
+            let url = format!("{}/drivers?session_key={session_key}", config.base_url,);
             openf1_get(http, &url, config).await
         })
         .await
@@ -118,8 +125,7 @@ pub async fn resolve_driver_number(
         if (matches_acronym || matches_full || matches_first || matches_last)
             && let Some(num) = d.get("driver_number").and_then(serde_json::Value::as_u64)
         {
-            return u16::try_from(num)
-                .map_err(|_| format!("driver_number {num} out of u16 range"));
+            return u16::try_from(num).map_err(|_| format!("driver_number {num} out of u16 range"));
         }
     }
 
@@ -131,6 +137,11 @@ pub async fn resolve_driver_number(
 /// Perform a GET request against the `OpenF1` API, returning the parsed JSON.
 ///
 /// Adds the optional auth token if configured.
+///
+/// # Errors
+///
+/// Returns an error if the request fails, if the API returns a non-success
+/// status, or if the response body cannot be parsed as JSON.
 pub async fn openf1_get(
     http: &reqwest::Client,
     url: &str,
