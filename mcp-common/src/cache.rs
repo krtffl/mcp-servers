@@ -65,7 +65,7 @@ mod tests {
 
     #[tokio::test]
     async fn cache_hit_returns_stored_value() {
-        let cache = ResponseCache::new(100, Duration::from_secs(60));
+        let cache = ResponseCache::new(100, Duration::from_mins(1));
         let value = serde_json::json!({"status": "ok"});
         cache.insert("test_key".to_owned(), value.clone()).await;
 
@@ -81,7 +81,7 @@ mod tests {
 
     #[tokio::test]
     async fn cache_miss_calls_fetch() {
-        let cache = ResponseCache::new(100, Duration::from_secs(60));
+        let cache = ResponseCache::new(100, Duration::from_mins(1));
         let expected = serde_json::json!({"fetched": true});
         let expected_clone = expected.clone();
 
