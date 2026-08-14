@@ -55,7 +55,7 @@ async fn test_prometheus_query() {
         auth_token: None,
     };
     let client = reqwest::Client::new();
-    let cache = ResponseCache::new(100, Duration::from_secs(60));
+    let cache = ResponseCache::new(100, Duration::from_mins(1));
 
     let result =
         tools::prometheus::execute("up", None, None, None, None, &client, &cache, &config).await;
@@ -92,7 +92,7 @@ async fn test_grafana_dashboard_search() {
         auth_token: None,
     };
     let client = reqwest::Client::new();
-    let cache = ResponseCache::new(100, Duration::from_secs(60));
+    let cache = ResponseCache::new(100, Duration::from_mins(1));
 
     let result = tools::grafana::execute(Some("System"), None, &client, &cache, &config).await;
 
@@ -131,7 +131,7 @@ async fn test_alertmanager_alerts() {
         url: mock_server.uri(),
     };
     let client = reqwest::Client::new();
-    let cache = ResponseCache::new(100, Duration::from_secs(60));
+    let cache = ResponseCache::new(100, Duration::from_mins(1));
 
     let result = tools::alerts::execute(None, None, &client, &cache, &config).await;
 
@@ -166,7 +166,7 @@ async fn test_prometheus_cache_hit() {
         auth_token: None,
     };
     let client = reqwest::Client::new();
-    let cache = ResponseCache::new(100, Duration::from_secs(60));
+    let cache = ResponseCache::new(100, Duration::from_mins(1));
 
     let first =
         tools::prometheus::execute("up", None, None, None, None, &client, &cache, &config).await;

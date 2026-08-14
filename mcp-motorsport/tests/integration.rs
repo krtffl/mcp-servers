@@ -21,7 +21,7 @@ fn openf1_config(mock_uri: &str) -> OpenF1Config {
 
 /// Build a fresh `ResponseCache` with short TTL for test isolation.
 fn test_cache() -> ResponseCache {
-    ResponseCache::new(100, Duration::from_secs(60))
+    ResponseCache::new(100, Duration::from_mins(1))
 }
 
 /// Standard mock response for `GET /sessions` returning a single session.

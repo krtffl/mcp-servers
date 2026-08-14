@@ -45,13 +45,13 @@ pub async fn execute(
                     config.base_url,
                 )
             } else {
-                format!("{}/stints?session_key={session_key}", config.base_url,)
+                format!("{}/stints?session_key={session_key}", config.base_url)
             };
 
             let stints_json = openf1_get(http, &url, config).await?;
 
             // Fetch driver names for display.
-            let drivers_url = format!("{}/drivers?session_key={session_key}", config.base_url,);
+            let drivers_url = format!("{}/drivers?session_key={session_key}", config.base_url);
             let drivers_json = openf1_get(http, &drivers_url, config).await?;
 
             let driver_names: HashMap<u64, String> = drivers_json

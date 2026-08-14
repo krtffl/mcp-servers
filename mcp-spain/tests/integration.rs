@@ -203,7 +203,7 @@ async fn test_boe_search_with_mock() {
         .await;
 
     let http = reqwest::Client::new();
-    let cache = ResponseCache::new(100, Duration::from_secs(60));
+    let cache = ResponseCache::new(100, Duration::from_mins(1));
     let config = BoeConfig {
         base_url: mock_server.uri(),
         rate_limit_rps: 10.0,

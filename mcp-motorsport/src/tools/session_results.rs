@@ -36,8 +36,8 @@ pub async fn execute(
                     reason: e,
                 })?;
 
-            let positions_url = format!("{}/position?session_key={session_key}", config.base_url,);
-            let drivers_url = format!("{}/drivers?session_key={session_key}", config.base_url,);
+            let positions_url = format!("{}/position?session_key={session_key}", config.base_url);
+            let drivers_url = format!("{}/drivers?session_key={session_key}", config.base_url);
 
             let (positions_json, drivers_json) = tokio::try_join!(
                 openf1_get(http, &positions_url, config),

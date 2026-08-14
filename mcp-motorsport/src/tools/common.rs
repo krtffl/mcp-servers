@@ -89,7 +89,7 @@ pub async fn resolve_driver_number(
 
     let value = cache
         .get_or_fetch(&cache_key, || async {
-            let url = format!("{}/drivers?session_key={session_key}", config.base_url,);
+            let url = format!("{}/drivers?session_key={session_key}", config.base_url);
             openf1_get(http, &url, config).await
         })
         .await
