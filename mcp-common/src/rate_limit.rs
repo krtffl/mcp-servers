@@ -24,6 +24,7 @@ impl RateLimiter {
     ///
     /// - `max_tokens`: burst capacity
     /// - `refill_rate`: tokens per second
+    #[must_use]
     pub fn new(max_tokens: f64, refill_rate: f64) -> Self {
         Self {
             state: Mutex::new(RateLimiterState {

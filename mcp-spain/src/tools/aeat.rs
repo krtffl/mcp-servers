@@ -19,6 +19,11 @@ pub struct TaxDeadline {
 }
 
 /// Get AEAT tax calendar deadlines, optionally filtered by quarter and business type.
+///
+/// # Errors
+///
+/// Returns an error if `year` is outside the supported 2024-2030 range, if
+/// `quarter` is not in 1-4, or if the response fails to serialize to JSON.
 pub fn execute(
     year: u16,
     quarter: Option<u8>,
@@ -126,7 +131,6 @@ static TAX_DEADLINES: &[TaxDeadline] = &[
         frequency: "quarterly",
         notes: "Autónomos en estimación objetiva (módulos).",
     },
-
     // --- Q2 declarations (for April-June) - Due July ---
     TaxDeadline {
         model: "303",
@@ -188,7 +192,6 @@ static TAX_DEADLINES: &[TaxDeadline] = &[
         frequency: "annual",
         notes: "Plazo general: 25 días naturales siguientes a los 6 meses desde cierre del ejercicio (julio para ejercicios coincidentes con año natural).",
     },
-
     // --- Q3 declarations (for July-September) - Due October ---
     TaxDeadline {
         model: "303",
@@ -250,7 +253,6 @@ static TAX_DEADLINES: &[TaxDeadline] = &[
         frequency: "quarterly",
         notes: "Primer pago fraccionado del IS. Se presenta también en abril (Q1) y diciembre (Q4).",
     },
-
     // --- Q4 declarations (for October-December) - Due January / annual summaries ---
     TaxDeadline {
         model: "303",

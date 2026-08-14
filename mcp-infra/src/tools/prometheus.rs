@@ -1,8 +1,15 @@
-//! query_prometheus tool — PromQL queries against Prometheus HTTP API.
+//! `query_prometheus` tool — `PromQL` queries against Prometheus HTTP API.
 
-use mcp_common::ResponseCache;
 use crate::config::PrometheusConfig;
+use mcp_common::ResponseCache;
 
+/// Run an instant or range `PromQL` query against the Prometheus HTTP API.
+///
+/// # Errors
+///
+/// Returns an error if the Prometheus request fails or returns a non-success
+/// status, or if the response cannot be parsed or serialized to JSON.
+#[allow(clippy::too_many_arguments)]
 pub async fn execute(
     query: &str,
     time: Option<&str>,
@@ -25,11 +32,7 @@ pub async fn execute(
 
     let value = cache
         .get_or_fetch(&cache_key, || async {
-            let endpoint = if is_range {
-                "query_range"
-            } else {
-                "query"
-            };
+            let endpoint = if is_range { "query_range" } else { "query" };
             let url = format!("{}/api/v1/{endpoint}", config.url);
 
             let mut params = vec![("query", query.to_string())];
@@ -51,12 +54,13 @@ pub async fn execute(
                 req = req.bearer_auth(token);
             }
 
-            let resp = req.send().await.map_err(|e| {
-                mcp_common::McpServerError::ExternalApi {
+            let resp = req
+                .send()
+                .await
+                .map_err(|e| mcp_common::McpServerError::ExternalApi {
                     url: url.clone(),
                     reason: e.to_string(),
-                }
-            })?;
+                })?;
 
             if !resp.status().is_success() {
                 let status = resp.status();
@@ -77,6 +81,5 @@ pub async fn execute(
         .await
         .map_err(|e| e.to_string())?;
 
-    serde_json::to_string_pretty(&value)
-        .map_err(|e| format!("JSON error: {e}"))
+    serde_json::to_string_pretty(&value).map_err(|e| format!("JSON error: {e}"))
 }

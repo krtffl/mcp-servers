@@ -21,6 +21,11 @@ pub struct BoeDocument {
 }
 
 /// Search the BOE API for documents matching the given criteria.
+///
+/// # Errors
+///
+/// Returns an error if `keywords` is empty, if the BOE API request fails or
+/// returns a non-success status, or if its response cannot be parsed.
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 pub async fn execute(
     keywords: &str,
@@ -51,9 +56,7 @@ pub async fn execute(
             // For search, we query the summary endpoint for a date range.
             // If no dates given, default to last 30 days.
             let today = chrono_today();
-            let from = date_from
-                .unwrap_or(&today)
-                .replace('-', "");
+            let from = date_from.unwrap_or(&today).replace('-', "");
             let to = date_to.unwrap_or(&today).replace('-', "");
 
             // BOE API endpoint for summary by date: /datosabiertos/api/boe/sumario/{YYYYMMDD}
@@ -76,12 +79,13 @@ pub async fn execute(
                 });
             }
 
-            let body = resp.text().await.map_err(|e| {
-                mcp_common::McpServerError::ExternalApi {
+            let body = resp
+                .text()
+                .await
+                .map_err(|e| mcp_common::McpServerError::ExternalApi {
                     url: url.clone(),
                     reason: format!("Failed to read response body: {e}"),
-                }
-            })?;
+                })?;
 
             // The BOE API returns JSON with a nested structure.
             // Parse it and filter by keywords, section, and department.
@@ -118,8 +122,7 @@ pub async fn execute(
                                 continue;
                             }
 
-                            let departamentos =
-                                as_array_or_single(seccion.get("departamento"));
+                            let departamentos = as_array_or_single(seccion.get("departamento"));
 
                             for dep in &departamentos {
                                 let dep_nombre = dep
@@ -135,12 +138,10 @@ pub async fn execute(
                                     continue;
                                 }
 
-                                let epigrafes =
-                                    as_array_or_single(dep.get("epigrafe"));
+                                let epigrafes = as_array_or_single(dep.get("epigrafe"));
 
                                 for epigrafe in &epigrafes {
-                                    let items =
-                                        as_array_or_single(epigrafe.get("item"));
+                                    let items = as_array_or_single(epigrafe.get("item"));
 
                                     for item in &items {
                                         let titulo = item

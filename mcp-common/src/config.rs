@@ -43,7 +43,7 @@ pub struct CacheConfig {
     #[serde(default = "default_ttl_seconds")]
     pub ttl_seconds: u64,
 
-    /// Per-tool TTL overrides (tool_name → seconds).
+    /// Per-tool TTL overrides (`tool_name` → seconds).
     pub tool_ttls: Option<HashMap<String, u64>>,
 }
 

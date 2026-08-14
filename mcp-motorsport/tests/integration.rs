@@ -1,6 +1,6 @@
 //! Integration tests for mcp-motorsport tools.
 //!
-//! Each test spins up a `wiremock::MockServer` to simulate the OpenF1 / Jolpica-F1
+//! Each test spins up a `wiremock::MockServer` to simulate the `OpenF1` / Jolpica-F1
 //! APIs, then calls the tool `execute` functions directly and asserts on the results.
 
 use std::time::Duration;
@@ -21,7 +21,7 @@ fn openf1_config(mock_uri: &str) -> OpenF1Config {
 
 /// Build a fresh `ResponseCache` with short TTL for test isolation.
 fn test_cache() -> ResponseCache {
-    ResponseCache::new(100, Duration::from_secs(60))
+    ResponseCache::new(100, Duration::from_mins(1))
 }
 
 /// Standard mock response for `GET /sessions` returning a single session.
@@ -68,7 +68,7 @@ async fn mount_sessions(mock: &MockServer) {
         .await;
 }
 
-/// Mount the standard `/drivers` mock for session_key=9001.
+/// Mount the standard `/drivers` mock for `session_key`=9001.
 async fn mount_drivers(mock: &MockServer) {
     Mock::given(method("GET"))
         .and(path("/drivers"))
@@ -111,10 +111,9 @@ async fn test_resolve_driver_number_by_acronym() {
     let client = reqwest::Client::new();
     let cache = test_cache();
 
-    let result = mcp_motorsport::tools::common::resolve_driver_number(
-        9001, "VER", &client, &cache, &config,
-    )
-    .await;
+    let result =
+        mcp_motorsport::tools::common::resolve_driver_number(9001, "VER", &client, &cache, &config)
+            .await;
 
     assert!(result.is_ok(), "expected Ok, got: {result:?}");
     assert_eq!(result.unwrap(), 1);
@@ -232,7 +231,12 @@ async fn test_get_tire_stints() {
     let cache = test_cache();
 
     let result = mcp_motorsport::tools::tire_stints::execute(
-        2024, "Bahrain", Some("VER"), &client, &cache, &config,
+        2024,
+        "Bahrain",
+        Some("VER"),
+        &client,
+        &cache,
+        &config,
     )
     .await;
 
@@ -290,10 +294,8 @@ async fn test_get_standings() {
     let client = reqwest::Client::new();
     let cache = test_cache();
 
-    let result = mcp_motorsport::tools::standings::execute(
-        2024, "drivers", &client, &cache, &jolpica,
-    )
-    .await;
+    let result =
+        mcp_motorsport::tools::standings::execute(2024, "drivers", &client, &cache, &jolpica).await;
 
     assert!(result.is_ok(), "expected Ok, got: {result:?}");
 

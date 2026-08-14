@@ -19,6 +19,12 @@ pub struct CatastroProperty {
 }
 
 /// Query Catastro by cadastral reference or address.
+///
+/// # Errors
+///
+/// Returns an error if neither a reference nor a complete address is supplied,
+/// if the Catastro API request fails or returns a non-success status, or if its
+/// response cannot be parsed.
 #[allow(clippy::too_many_arguments)]
 pub async fn execute(
     reference: Option<&str>,
@@ -205,10 +211,7 @@ fn parse_catastro_response(body: &serde_json::Value, reference: &str) -> Vec<Cat
             .and_then(|v| v.as_str())
             .and_then(|s| s.parse::<f64>().ok());
 
-        let year = debi
-            .get("ant")
-            .and_then(|v| v.as_str())
-            .map(String::from);
+        let year = debi.get("ant").and_then(|v| v.as_str()).map(String::from);
 
         properties.push(CatastroProperty {
             reference: reference.to_string(),

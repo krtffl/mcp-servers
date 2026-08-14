@@ -1,7 +1,7 @@
 //! mcp-infra: MCP server for self-hosted infrastructure metrics.
 //!
-//! Tools: get_server_health, list_docker_containers, query_prometheus,
-//! get_grafana_dashboard_url, list_recent_alerts.
+//! Tools: `get_server_health`, `list_docker_containers`, `query_prometheus`,
+//! `get_grafana_dashboard_url`, `list_recent_alerts`.
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -18,7 +18,11 @@ use schemars::JsonSchema;
 use serde::Deserialize;
 
 #[derive(Parser, Debug)]
-#[command(name = "mcp-infra", version, about = "MCP server for infrastructure metrics")]
+#[command(
+    name = "mcp-infra",
+    version,
+    about = "MCP server for infrastructure metrics"
+)]
 struct Cli {
     /// Path to TOML config file.
     #[arg(short, long)]
@@ -44,7 +48,7 @@ pub struct ListContainersInput {
 
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct QueryPrometheusInput {
-    /// PromQL query expression.
+    /// `PromQL` query expression.
     pub query: String,
     /// Evaluation timestamp (RFC3339 or Unix). Defaults to now.
     pub time: Option<String>,
@@ -87,6 +91,7 @@ impl ServerHandler for InfraServer {}
 
 #[tool_router(router = tool_router)]
 impl InfraServer {
+    #[must_use]
     pub fn new(config: InfraConfig, http: reqwest::Client, cache: ResponseCache) -> Self {
         Self {
             tool_router: Self::tool_router(),
@@ -115,8 +120,7 @@ impl InfraServer {
         &self,
         input: Parameters<ListContainersInput>,
     ) -> Result<String, String> {
-        tools::docker::execute(input.0.name_filter.as_deref(), input.0.all.unwrap_or(false))
-            .await
+        tools::docker::execute(input.0.name_filter.as_deref(), input.0.all.unwrap_or(false)).await
     }
 
     #[tool(

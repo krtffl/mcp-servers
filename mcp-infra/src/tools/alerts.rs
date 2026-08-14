@@ -1,4 +1,4 @@
-//! list_recent_alerts tool — Alertmanager alert listing.
+//! `list_recent_alerts` tool — Alertmanager alert listing.
 
 use mcp_common::ResponseCache;
 use serde::Serialize;
@@ -14,6 +14,12 @@ pub struct AlertInfo {
     pub annotations: std::collections::HashMap<String, String>,
 }
 
+/// List recent Alertmanager alerts, optionally filtered by status and severity.
+///
+/// # Errors
+///
+/// Returns an error if the Alertmanager request fails or returns a non-success
+/// status, or if the response cannot be parsed or serialized to JSON.
 pub async fn execute(
     status_filter: Option<&str>,
     severity_filter: Option<&str>,
@@ -36,15 +42,12 @@ pub async fn execute(
                 params.push(("filter", format!("status=\"{s}\"")));
             }
 
-            let resp = http
-                .get(&url)
-                .query(&params)
-                .send()
-                .await
-                .map_err(|e| mcp_common::McpServerError::ExternalApi {
+            let resp = http.get(&url).query(&params).send().await.map_err(|e| {
+                mcp_common::McpServerError::ExternalApi {
                     url: url.clone(),
                     reason: e.to_string(),
-                })?;
+                }
+            })?;
 
             if !resp.status().is_success() {
                 let status = resp.status();
@@ -55,12 +58,13 @@ pub async fn execute(
                 });
             }
 
-            let raw_alerts: Vec<serde_json::Value> = resp.json().await.map_err(|e| {
-                mcp_common::McpServerError::ExternalApi {
-                    url: url.clone(),
-                    reason: format!("JSON parse error: {e}"),
-                }
-            })?;
+            let raw_alerts: Vec<serde_json::Value> =
+                resp.json()
+                    .await
+                    .map_err(|e| mcp_common::McpServerError::ExternalApi {
+                        url: url.clone(),
+                        reason: format!("JSON parse error: {e}"),
+                    })?;
 
             let alerts: Vec<AlertInfo> = raw_alerts
                 .iter()
@@ -111,16 +115,13 @@ pub async fn execute(
                 })
                 .collect();
 
-            serde_json::to_value(&alerts).map_err(|e| {
-                mcp_common::McpServerError::ExternalApi {
-                    url,
-                    reason: format!("serialization error: {e}"),
-                }
+            serde_json::to_value(&alerts).map_err(|e| mcp_common::McpServerError::ExternalApi {
+                url,
+                reason: format!("serialization error: {e}"),
             })
         })
         .await
         .map_err(|e| e.to_string())?;
 
-    serde_json::to_string_pretty(&value)
-        .map_err(|e| format!("JSON error: {e}"))
+    serde_json::to_string_pretty(&value).map_err(|e| format!("JSON error: {e}"))
 }

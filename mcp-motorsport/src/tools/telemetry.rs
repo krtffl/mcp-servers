@@ -8,13 +8,18 @@ use std::fmt::Write as _;
 
 use mcp_common::ResponseCache;
 
-use crate::config::OpenF1Config;
 use super::common::{openf1_get, resolve_driver_number, resolve_session_key};
+use crate::config::OpenF1Config;
 
 /// Maximum telemetry samples to return (keeps output manageable for LLM consumption).
 const MAX_SAMPLES: usize = 100;
 
 /// Fetch telemetry data for a driver in a session, optionally for a specific lap.
+///
+/// # Errors
+///
+/// Returns an error if the session or driver cannot be resolved, if the
+/// `OpenF1` request fails, or if the response fails to serialize to JSON.
 #[allow(clippy::too_many_arguments)]
 pub async fn execute(
     year: u16,
@@ -26,10 +31,8 @@ pub async fn execute(
     cache: &ResponseCache,
     config: &OpenF1Config,
 ) -> Result<String, String> {
-    let session_key =
-        resolve_session_key(year, grand_prix, session, http, cache, config).await?;
-    let driver_number =
-        resolve_driver_number(session_key, driver, http, cache, config).await?;
+    let session_key = resolve_session_key(year, grand_prix, session, http, cache, config).await?;
+    let driver_number = resolve_driver_number(session_key, driver, http, cache, config).await?;
 
     let cache_key = format!(
         "telemetry:{session_key}:{driver_number}:{}",

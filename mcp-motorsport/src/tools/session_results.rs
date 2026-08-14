@@ -8,10 +8,15 @@ use std::collections::HashMap;
 
 use mcp_common::ResponseCache;
 
-use crate::config::OpenF1Config;
 use super::common::{openf1_get, resolve_session_key};
+use crate::config::OpenF1Config;
 
 /// Fetch session results for a given Grand Prix and session type.
+///
+/// # Errors
+///
+/// Returns an error if the session cannot be resolved, if the `OpenF1` request
+/// fails, or if the response fails to serialize to JSON.
 pub async fn execute(
     year: u16,
     grand_prix: &str,
@@ -24,21 +29,15 @@ pub async fn execute(
 
     let value = cache
         .get_or_fetch(&cache_key, || async {
-            let session_key =
-                resolve_session_key(year, grand_prix, session, http, cache, config).await
-                    .map_err(|e| mcp_common::McpServerError::ExternalApi {
-                        url: String::new(),
-                        reason: e,
-                    })?;
+            let session_key = resolve_session_key(year, grand_prix, session, http, cache, config)
+                .await
+                .map_err(|e| mcp_common::McpServerError::ExternalApi {
+                    url: String::new(),
+                    reason: e,
+                })?;
 
-            let positions_url = format!(
-                "{}/position?session_key={session_key}",
-                config.base_url,
-            );
-            let drivers_url = format!(
-                "{}/drivers?session_key={session_key}",
-                config.base_url,
-            );
+            let positions_url = format!("{}/position?session_key={session_key}", config.base_url);
+            let drivers_url = format!("{}/drivers?session_key={session_key}", config.base_url);
 
             let (positions_json, drivers_json) = tokio::try_join!(
                 openf1_get(http, &positions_url, config),
@@ -94,7 +93,11 @@ pub async fn execute(
                 })
                 .collect();
 
-            results.sort_by_key(|r| r.get("position").and_then(serde_json::Value::as_u64).unwrap_or(999));
+            results.sort_by_key(|r| {
+                r.get("position")
+                    .and_then(serde_json::Value::as_u64)
+                    .unwrap_or(999)
+            });
 
             Ok(serde_json::json!({
                 "year": year,
