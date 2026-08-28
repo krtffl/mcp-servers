@@ -1,13 +1,13 @@
 # Pin the toolchain instead of tracking whatever `stable` resolves to that day.
 #
-# CI runs `dtolnay/rust-toolchain@stable` with `-D warnings` and workspace-wide
-# clippy::pedantic. That combination means a new stable can turn this repo red
+# CI runs `dtolnay/rust-toolchain` (SHA-pinned, `toolchain: stable`) with
+# `-D warnings` and workspace-wide clippy::pedantic. That combination means a new stable can turn this repo red
 # with zero source changes: 1.97 introduced duration_suboptimal_units and
 # unnecessary_trailing_comma (the latter flagging commas rustfmt itself had
 # left), and both broke CI here on code that had not been touched.
 #
 # `rustup default` (which the action sets) loses to this file, so the pin holds
-# even though the workflow still says @stable.
+# even though the action still installs stable.
 [toolchain]
 channel = "1.97.1"
 components = ["clippy", "rustfmt"]
